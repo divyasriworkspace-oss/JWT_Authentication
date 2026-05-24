@@ -1,0 +1,9 @@
+# Enable rewrite engine for clean URL routing.
+RewriteEngine On
+
+# Skip rewriting when the request targets a real file or directory.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route all other requests through the front controller.
+RewriteRule ^(.*)$ public/index.php [QSA,L]
