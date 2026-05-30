@@ -3,28 +3,54 @@
 // Utility for generating and verifying HS256 JWT tokens.
 class JWT
 {
-    // Build and sign a JWT from payload claims.
-    public static function generate($payload)
+     public static function generateAccessToken($user)
     {
-        $header = [
-            "typ" => "JWT",
-            "alg" => "HS256"
+        $payload = [
+            "user_id" => $user['id'],
+            "email" => $user['email'],
+            "type" => "access",
+            "exp" => time() + $_ENV['ACCESS_TOKEN_EXPIRY']
         ];
 
-        $payload['iat'] = time();
-        $payload['exp'] = time() + (int)$_ENV['JWT_EXPIRY'];
+        return self::generateToken(
+            $payload,
+            $_ENV['ACCESS_TOKEN_SECRET']
+        );
+    }
+
+    public static function generateRefreshToken($user)
+    {
+        $payload = [
+            "user_id" => $user['id'],
+            "type" => "refresh",
+            "exp" => time() + $_ENV['REFRESH_TOKEN_EXPIRY']
+        ];
+
+        return self::generateToken(
+            $payload,
+            $_ENV['REFRESH_TOKEN_SECRET']
+        );
+    }
+
+    private static function generateToken($payload, $secret)
+    {
+        $header = [
+            "alg" => "HS256",
+            "typ" => "JWT"
+        ];
 
         $headerEncoded = self::base64UrlEncode(json_encode($header));
-        $payloadEncoded = self::base64UrlEncode(json_encode($payload));
+
+        $payloadEncoded =self::base64UrlEncode(json_encode($payload));
 
         $signature = hash_hmac(
             'sha256',
             "$headerEncoded.$payloadEncoded",
-            $_ENV['JWT_SECRET'],
+            $secret,
             true
         );
 
-        $signatureEncoded = self::base64UrlEncode($signature);
+        $signatureEncoded =self::base64UrlEncode($signature);
 
         return "$headerEncoded.$payloadEncoded.$signatureEncoded";
     }
@@ -45,7 +71,7 @@ class JWT
             hash_hmac(
                 'sha256',
                 "$header.$payload",
-                $_ENV['JWT_SECRET'],
+                $secret,
                 true
             )
         );
