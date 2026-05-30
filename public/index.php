@@ -14,6 +14,8 @@ require_once "../app/core/Router.php";
 // Load data models.
 require_once "../app/models/User.php";
 require_once "../app/models/Patient.php";
+require_once "../app/models/RefreshToken.php";
+
 
 // Load controllers.
 require_once "../app/controllers/AuthController.php";
@@ -44,11 +46,23 @@ $router->add('POST', '/api/login', function () use ($authController,$request)
     $authController->login($request);
 });
 
+// Refresh Access Token
+$router->add( 'POST','/api/refresh',function () use ($authController, $request)
+{
+    $authController->refresh($request);
+});
+
+// Logout
+$router->add('POST','/api/logout',function () use ($authController, $request)
+{
+    $authController->logout($request);
+});
+
 // Protected patient routes.
 $router->add('GET', '/api/patients', function () use ($patientController, &$request)
 {
     AuthMiddleware::handle($request);
-    $patientController->index();
+    $patientController->index($request);
 });
 
 $router->add('POST', '/api/patients', function () use ( $patientController, &$request)
@@ -66,7 +80,7 @@ $router->add('PUT', '/api/patients/{id}', function ($id) use ($patientController
 $router->add('DELETE', '/api/patients/{id}', function ($id) use ($patientController, &$request) 
 {
     AuthMiddleware::handle($request);
-    $patientController->delete($id);
+    $patientController->delete($id,$request);
 });
 
 // Normalize URI by removing project base path.
