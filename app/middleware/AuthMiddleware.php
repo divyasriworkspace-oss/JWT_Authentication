@@ -25,12 +25,16 @@ class AuthMiddleware
         $token = $matches[1];
 
     // Decode and validate signature + expiry.
-        $decoded = JWT::verify($token);
+        $decoded = JWT::verify($token, $_ENV['ACCESS_TOKEN_SECRET']);
 
         if (!$decoded) {
             Response::json(401, "Invalid or expired token");
+            exit;
         }
-
+        if ($decoded['type'] !== 'access') {
+            Response::json(401, "Invalid token type");
+            exit;
+        }
         $request['user'] = $decoded;
     }
 }
