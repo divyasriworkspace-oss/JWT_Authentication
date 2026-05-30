@@ -15,27 +15,32 @@ class Patient
         $this->conn = $db;
     }
 
-    // Fetch all patient rows.
-    public function all()
+    // Fetch all patient rows owned by a specific user.
+    public function allByUser($userId)
     {
-        $result = $this->conn->query(
-            "SELECT * FROM {$this->table}"
-        );
+        $sql = "SELECT * FROM {$this->table} WHERE user_id=? ORDER BY id DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
 
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     // Insert a new patient row.
-    public function create($data)
+    public function create($data,$userId)
     {
         $sql = "INSERT INTO {$this->table}
-                (name,age,gender,phone,address)
+                (user_id,name,age,gender,phone,address)
                 VALUES (?,?,?,?,?)";
 
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param(
             "sisss",
+            $userId,
             $data['name'],
             $data['age'],
             $data['gender'],
@@ -45,38 +50,53 @@ class Patient
 
         return $stmt->execute();
     }
+    // Return true when a patient belongs to the given user.
+    public function existsByIdAndUser($id, $userId)
+    {
+        $sql = "SELECT id FROM {$this->table} WHERE id=? AND user_id=? LIMIT 1";
 
-    // Update an existing patient row by id.
-    public function update($id, $data)
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $id, $userId);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        return $result->num_rows > 0;
+    }
+
+    // Update an existing patient row by id for the owner only.
+    public function updateByUser($id, $data, $userId)
     {
         $sql = "UPDATE {$this->table}
                 SET name=?, age=?, gender=?, phone=?, address=?
-                WHERE id=?";
+                WHERE id=? AND user_id=?";
 
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param(
-            "sisssi",
+            "sisssii",
             $data['name'],
             $data['age'],
             $data['gender'],
             $data['phone'],
             $data['address'],
-            $id
+            $id,
+            $userId
         );
 
         return $stmt->execute();
     }
 
-    // Delete a patient row by id.
-    public function delete($id)
+    // Delete a patient row by id for the owner only.
+    public function deleteByUser($id, $userId)
     {
-        $sql = "DELETE FROM {$this->table} WHERE id=?";
+        $sql = "DELETE FROM {$this->table} WHERE id=? AND user_id=?";
 
         $stmt = $this->conn->prepare($sql);
 
-        $stmt->bind_param("i", $id);
+        $stmt->bind_param("ii", $id, $userId);
 
         return $stmt->execute();
     }
 }
+    
