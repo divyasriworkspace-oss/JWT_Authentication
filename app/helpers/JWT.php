@@ -56,7 +56,7 @@ class JWT
     }
 
     // Validate signature and expiry, then return decoded payload.
-    public static function verify($token)
+    public static function verify($token, $secret)
     {
         $parts = explode('.', $token);
 
