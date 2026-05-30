@@ -9,12 +9,22 @@ class JsonMiddleware
         header("Content-Type: application/json");
 
         $method = $_SERVER['REQUEST_METHOD'];
+         
+        $uri = parse_url(
+        $_SERVER['REQUEST_URI'],
+        PHP_URL_PATH
+        );
 
         $request = [];
 
         // Only methods that typically carry a body are validated and parsed.
         if (in_array($method, ['POST', 'PUT', 'PATCH'])) {
 
+             // Skip body validation for refresh
+            if ($uri === '/JWT_Token/api/refresh' || $uri=== '/JWT_Token/api/logout') {
+                return [];
+            }
+            
             if (
                 !isset($_SERVER['CONTENT_TYPE']) ||
                 strpos($_SERVER['CONTENT_TYPE'], 'application/json') === false
