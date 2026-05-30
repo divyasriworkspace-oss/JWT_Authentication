@@ -29,6 +29,19 @@ class User
 
         return $stmt->get_result()->fetch_assoc();
     }
+     // Retrieve a single user by id.
+    public function findById($id)
+    {
+        $sql = "SELECT id, name, email, password FROM {$this->table} WHERE id=?";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param("i", $id);
+
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
+    }
 
     // Insert a new user record.
     public function create($name, $email, $password)
