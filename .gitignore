@@ -1,15 +1,1 @@
-# Database connection settings
-#sensitive data secured 
-DB_HOST=localhost
-DB_NAME=hospital_api
-DB_USER=root
-DB_PASS=
 
-# JWT signing configuration
-ACCESS_TOKEN_SECRET=Access_key
-REFRESH_TOKEN_SECRET=refresh_key
-ACCESS_TOKEN_EXPIRY=30
-REFRESH_TOKEN_EXPIRY=172800
-
-# Backward compatibility with older code paths
-JWT_EXPIRY=3600
